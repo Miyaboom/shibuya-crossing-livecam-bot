@@ -15,7 +15,7 @@ const express_1 = __importDefault(require("express"));
     await page.screenshot({ path: 'public/youtube.png' });
     await browser.close();
     const app = express_1.default();
-    const port = 3000;
+    const port = process.env.PORT || 5000;
     app.get('/', (req, res) => {
         res.send('Hello World!');
     });
