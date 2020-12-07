@@ -24,11 +24,6 @@ import fs from 'fs'
   await page.waitForSelector('button.ytp-large-play-button.ytp-button');
   await page.click('button.ytp-large-play-button.ytp-button');
   await page.waitForSelector('div.ytp-player-content.ytp-iv-player-content');
-  await page.evaluate(() => {
-    const element = window.document.querySelector('div.ytp-player-content.ytp-iv-player-content')
-    console.log(element)
-    element?.parentNode?.removeChild(element)
-  });
   await page.waitForTimeout(180000);
   await page.screenshot({ path: 'public/images/screenshot.png' });
   await browser.close();

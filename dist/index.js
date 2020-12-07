@@ -26,12 +26,6 @@ const fs_1 = __importDefault(require("fs"));
     await page.waitForSelector('button.ytp-large-play-button.ytp-button');
     await page.click('button.ytp-large-play-button.ytp-button');
     await page.waitForSelector('div.ytp-player-content.ytp-iv-player-content');
-    await page.evaluate(() => {
-        var _a;
-        const element = window.document.querySelector('div.ytp-player-content.ytp-iv-player-content');
-        console.log(element);
-        (_a = element === null || element === void 0 ? void 0 : element.parentNode) === null || _a === void 0 ? void 0 : _a.removeChild(element);
-    });
     await page.waitForTimeout(180000);
     await page.screenshot({ path: 'public/images/screenshot.png' });
     await browser.close();
