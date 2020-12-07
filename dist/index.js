@@ -45,7 +45,7 @@ const fs_1 = __importDefault(require("fs"));
     const data = await fs_1.default.readFileSync('public/images/screenshot.png');
     const media = await twitterClient.post('media/upload', { media: data });
     twitterClient.post('statuses/update', {
-        status: '',
+        status: '#渋谷 #渋谷スクランブル交差点 #Shibuya #ShibuyaCrossing',
         media_ids: media.media_id_string
     }, function (error, tweet, response) {
         if (!error) {
