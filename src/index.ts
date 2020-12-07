@@ -1,26 +1,105 @@
+// import express from 'express'
 import puppeteer from 'puppeteer';
-import express from 'express'
+import twitter from 'twitter'
+import fs from 'fs'
 
 (async () => {
+
+  // 環境変数
+  const chromePath = process.env.CHROME_PATH || ''
+  const youtubePath = process.env.YOUTUBE_PATH || ''
+  const twitterConsumerKey = process.env.TWITTER_CONSUMER_KEY || ''
+  const twitterConsumerSecret = process.env.TWITTER_CONSUMER_SECRET || ''
+  const twitterTokenKey = process.env.TWITTER_TOKEN_KEY || ''
+  const twitterTokenSecret = process.env.TWITTER_TOKEN_SECRET || ''
+
+  // Puppeteer
   const browser = await puppeteer.launch({
-    executablePath: '/app/.apt/usr/bin/google-chrome',
+    executablePath: chromePath,
+    // executablePath: '/app/.apt/usr/bin/google-chrome',
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
   const page = await browser.newPage();
-  await page.goto('https://www.youtube.com/watch?v=lkIJYc4UH60');
-  await page.screenshot({ path: 'public/youtube.png' });
+  await page.goto(youtubePath);
+  await page.waitForSelector('button.ytp-large-play-button.ytp-button');
+  await page.click('button.ytp-large-play-button.ytp-button');
+  await page.waitForSelector('div.ytp-player-content.ytp-iv-player-content');
+  await page.evaluate(() => {
+    const element = window.document.querySelector('div.ytp-player-content.ytp-iv-player-content')
+    console.log(element)
+    element?.parentNode?.removeChild(element)
+  });
+  await page.waitForTimeout(180000);
+  await page.screenshot({ path: 'public/images/screenshot.png' });
   await browser.close();
 
-  const app = express()
-  const port = process.env.PORT || 5000
+  // Twitter
+  const twitterClient = new twitter({
+    consumer_key: twitterConsumerKey,
+    consumer_secret: twitterConsumerSecret,
+    access_token_key: twitterTokenKey,
+    access_token_secret: twitterTokenSecret
+  });
 
-  app.get('/', (req, res) => {
-    res.send('Hello World!')
-  })
+  const data = await fs.readFileSync('public/images/screenshot.png');
+  const media = await twitterClient.post('media/upload', { media: data });
 
-  app.use(express.static('public'));
+  twitterClient.post('statuses/update', {
+    status: '',
+    media_ids: media.media_id_string
+  }, function (error, tweet, response) {
+    if (!error) {
+      console.log(tweet)
+    } else {
+      console.log(error)
+    }
+  });
 
-  app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`)
-  })
+  // Webサーバー
+  // const app = express()
+  // const port = process.env.PORT || 5000
+
+  // app.get('/', (req, res) => {
+  //   res.send('Hello World!')
+  // })
+
+  // app.get('/screenshot', (req, res) => {
+  //   page.screenshot({ path: 'public/images/screenshot.png' });
+  //   res.send('Take a screenshot!')
+  // })
+
+  // app.get('/tweet', (req, res) => {
+  //   twitterClient.post('statuses/update', { status: 'Shibuya Crossing LiveCam' }, function (error, tweet, response) {
+  //     if (!error) {
+  //       res.send(tweet)
+  //     } else {
+  //       res.send(error)
+  //     }
+  //   });
+  // })
+
+  // app.get('/tweet-screenshot', async (req, res) => {
+
+  //   await page.screenshot({ path: 'public/images/screenshot.png' });
+
+  //   const data = await fs.readFileSync('public/images/screenshot.png');
+  //   const media = await twitterClient.post('media/upload', { media: data });
+
+  //   twitterClient.post('statuses/update', {
+  //     status: '',
+  //     media_ids: media.media_id_string
+  //   }, function (error, tweet, response) {
+  //     if (!error) {
+  //       res.send(tweet)
+  //     } else {
+  //       res.send(error)
+  //     }
+  //   });
+  // })
+
+  // app.use(express.static('public'));
+
+  // app.listen(port, () => {
+  //   console.log(`Example app listening at http://localhost:${port}`)
+  // })
 })();
