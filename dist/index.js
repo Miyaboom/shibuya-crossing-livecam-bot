@@ -11,6 +11,7 @@ const fs_1 = __importDefault(require("fs"));
     // 環境変数
     const chromePath = process.env.CHROME_PATH || '';
     const youtubePath = process.env.YOUTUBE_PATH || '';
+    const youtubeChatPath = process.env.YOUTUBE_CHAT_PATH || '';
     const twitterConsumerKey = process.env.TWITTER_CONSUMER_KEY || '';
     const twitterConsumerSecret = process.env.TWITTER_CONSUMER_SECRET || '';
     const twitterTokenKey = process.env.TWITTER_TOKEN_KEY || '';
@@ -18,7 +19,6 @@ const fs_1 = __importDefault(require("fs"));
     // Puppeteer
     const browser = await puppeteer_1.default.launch({
         executablePath: chromePath,
-        // executablePath: '/app/.apt/usr/bin/google-chrome',
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
     const page = await browser.newPage();
@@ -28,6 +28,9 @@ const fs_1 = __importDefault(require("fs"));
     await page.waitForSelector('div.ytp-player-content.ytp-iv-player-content');
     await page.waitForTimeout(180000);
     await page.screenshot({ path: 'public/images/screenshot.png' });
+    await page.goto(youtubeChatPath);
+    await page.waitForTimeout(10000);
+    await page.screenshot({ path: 'public/images/chat_screenshot.png' });
     await browser.close();
     // Twitter
     const twitterClient = new twitter_1.default({
@@ -38,9 +41,11 @@ const fs_1 = __importDefault(require("fs"));
     });
     const data = await fs_1.default.readFileSync('public/images/screenshot.png');
     const media = await twitterClient.post('media/upload', { media: data });
+    const chatdata = await fs_1.default.readFileSync('public/images/chat_screenshot.png');
+    const chatmedia = await twitterClient.post('media/upload', { media: chatdata });
     twitterClient.post('statuses/update', {
         status: '#渋谷 #渋谷スクランブル交差点 #Shibuya #ShibuyaCrossing',
-        media_ids: media.media_id_string
+        media_ids: [media.media_id_string, chatmedia.media_id_string]
     }, function (error, tweet, response) {
         if (!error) {
             console.log(tweet);
