@@ -16,19 +16,35 @@ import fs from 'fs'
 
   // Puppeteer
   const browser = await puppeteer.launch({
+    headless: false,
     executablePath: chromePath,
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
   const page = await browser.newPage();
+
+  // page.on('pageerror', (err) => {
+  //   console.log('pageerror: ', err)
+  // })
+
+  // page.on('request', req => {
+  //   console.log(req.headers());
+  // });
+
+  // page.on('response', response => {
+  //   console.log(response.status(), response.url())
+  //   if (300 > response.status() && 200 <= response.status()) return;
+  //   console.warn('status error', response.status(), response.url())
+  // });
+
   await page.goto(youtubePath);
   await page.waitForSelector('button.ytp-large-play-button.ytp-button');
   await page.click('button.ytp-large-play-button.ytp-button');
   await page.waitForSelector('div.ytp-player-content.ytp-iv-player-content');
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(180000);
   await page.screenshot({ path: 'public/images/screenshot.png' });
 
   await page.goto(youtubeChatPath);
-  await page.waitForTimeout(1000);
+  await page.waitForTimeout(10000);
   await page.screenshot({ path: 'public/images/chat_screenshot.png' });
 
   await browser.close();
