@@ -24,11 +24,11 @@ import fs from 'fs'
   await page.waitForSelector('button.ytp-large-play-button.ytp-button');
   await page.click('button.ytp-large-play-button.ytp-button');
   await page.waitForSelector('div.ytp-player-content.ytp-iv-player-content');
-  await page.waitForTimeout(180000);
+  await page.waitForTimeout(1000);
   await page.screenshot({ path: 'public/images/screenshot.png' });
 
   await page.goto(youtubeChatPath);
-  await page.waitForTimeout(10000);
+  await page.waitForTimeout(1000);
   await page.screenshot({ path: 'public/images/chat_screenshot.png' });
 
   await browser.close();
@@ -49,7 +49,7 @@ import fs from 'fs'
 
   twitterClient.post('statuses/update', {
     status: '#渋谷 #渋谷スクランブル交差点 #Shibuya #ShibuyaCrossing',
-    media_ids: [media.media_id_string, chatmedia.media_id_string]
+    media_ids: `${media.media_id_string},${chatmedia.media_id_string}`
   }, function (error, tweet, response) {
     if (!error) {
       console.log(tweet)
