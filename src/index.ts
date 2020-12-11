@@ -1,4 +1,3 @@
-// import express from 'express'
 import puppeteer from 'puppeteer';
 import twitter from 'twitter'
 import fs from 'fs'
@@ -14,38 +13,37 @@ import fs from 'fs'
   const twitterTokenKey = process.env.TWITTER_TOKEN_KEY || ''
   const twitterTokenSecret = process.env.TWITTER_TOKEN_SECRET || ''
 
+  // コマンドライン引数
+  const args = process.argv.slice(2);
+  const takeChatScreenShot = args[0] || '' // 引数有りで実行した場合チャット欄もスクショする
+
   // Puppeteer
   const browser = await puppeteer.launch({
-    headless: false,
+    headless: takeChatScreenShot ? false : true, // チャット欄をスクショする場合ヘッドフルモードで起動する
     executablePath: chromePath,
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
   const page = await browser.newPage();
 
-  // page.on('pageerror', (err) => {
-  //   console.log('pageerror: ', err)
-  // })
+  page.on('pageerror', (error) => {
+    console.error('pageerror: ', error)
+  })
 
-  // page.on('request', req => {
-  //   console.log(req.headers());
-  // });
-
-  // page.on('response', response => {
-  //   console.log(response.status(), response.url())
-  //   if (300 > response.status() && 200 <= response.status()) return;
-  //   console.warn('status error', response.status(), response.url())
-  // });
+  const playButtonSelector = 'button.ytp-large-play-button.ytp-button'
+  const screenshotPath = 'public/images/screenshot.png'
+  const chatScreenShotPath = 'public/images/chat_screenshot.png'
 
   await page.goto(youtubePath);
-  await page.waitForSelector('button.ytp-large-play-button.ytp-button');
-  await page.click('button.ytp-large-play-button.ytp-button');
-  await page.waitForSelector('div.ytp-player-content.ytp-iv-player-content');
-  await page.waitForTimeout(180000);
-  await page.screenshot({ path: 'public/images/screenshot.png' });
+  await page.waitForSelector(playButtonSelector);
+  await page.click(playButtonSelector);
+  await page.waitForTimeout(180000); // 広告の終了を待機
+  await page.screenshot({ path: screenshotPath });
 
-  await page.goto(youtubeChatPath);
-  await page.waitForTimeout(10000);
-  await page.screenshot({ path: 'public/images/chat_screenshot.png' });
+  if (takeChatScreenShot) {
+    await page.goto(youtubeChatPath);
+    await page.waitForTimeout(1000);
+    await page.screenshot({ path: chatScreenShotPath });
+  }
 
   await browser.close();
 
@@ -57,68 +55,37 @@ import fs from 'fs'
     access_token_secret: twitterTokenSecret
   });
 
-  const data = await fs.readFileSync('public/images/screenshot.png');
+  // スクリーンショットをTwitterにアップロード
+  const data = (() => {
+    try {
+      return fs.readFileSync(screenshotPath);
+    } catch (error) {
+      console.error(`failed to read ${error}`)
+    }
+  })();
   const media = await twitterClient.post('media/upload', { media: data });
 
-  const chatdata = await fs.readFileSync('public/images/chat_screenshot.png');
-  const chatmedia = await twitterClient.post('media/upload', { media: chatdata });
+  // ライブチャットのスクリーンショットをTwitterにアップロード
+  const chatdata = takeChatScreenShot ? (() => {
+    try {
+      return fs.readFileSync(chatScreenShotPath);
+    } catch (error) {
+      console.error(`failed to read ${error}`)
+    }
+  })() : null
+  const chatmedia = takeChatScreenShot && chatdata ? await twitterClient.post('media/upload', { media: chatdata }) : null;
+
+  // Twitterに投稿
+  const media_ids = takeChatScreenShot && chatmedia ? `${media.media_id_string},${chatmedia.media_id_string}` : `${media.media_id_string}`
 
   twitterClient.post('statuses/update', {
     status: '#渋谷 #渋谷スクランブル交差点 #Shibuya #ShibuyaCrossing',
-    media_ids: `${media.media_id_string},${chatmedia.media_id_string}`
-  }, function (error, tweet, response) {
+    media_ids: media_ids
+  }, (error, tweet, response) => {
     if (!error) {
       console.log(tweet)
     } else {
-      console.log(error)
+      console.error(error)
     }
   });
-
-  // Webサーバー
-  // const app = express()
-  // const port = process.env.PORT || 5000
-
-  // app.get('/', (req, res) => {
-  //   res.send('Hello World!')
-  // })
-
-  // app.get('/screenshot', (req, res) => {
-  //   page.screenshot({ path: 'public/images/screenshot.png' });
-  //   res.send('Take a screenshot!')
-  // })
-
-  // app.get('/tweet', (req, res) => {
-  //   twitterClient.post('statuses/update', { status: 'Shibuya Crossing LiveCam' }, function (error, tweet, response) {
-  //     if (!error) {
-  //       res.send(tweet)
-  //     } else {
-  //       res.send(error)
-  //     }
-  //   });
-  // })
-
-  // app.get('/tweet-screenshot', async (req, res) => {
-
-  //   await page.screenshot({ path: 'public/images/screenshot.png' });
-
-  //   const data = await fs.readFileSync('public/images/screenshot.png');
-  //   const media = await twitterClient.post('media/upload', { media: data });
-
-  //   twitterClient.post('statuses/update', {
-  //     status: '',
-  //     media_ids: media.media_id_string
-  //   }, function (error, tweet, response) {
-  //     if (!error) {
-  //       res.send(tweet)
-  //     } else {
-  //       res.send(error)
-  //     }
-  //   });
-  // })
-
-  // app.use(express.static('public'));
-
-  // app.listen(port, () => {
-  //   console.log(`Example app listening at http://localhost:${port}`)
-  // })
 })();
