@@ -23,9 +23,15 @@ import fs from 'fs'
     console.error('pageerror: ', error)
   })
 
+  const dirPath = 'public/images/'
   const playButtonSelector = 'button.ytp-large-play-button.ytp-button'
-  const screenshotPath = 'public/images/screenshot.png'
+  const screenshotPath = `${dirPath}screenshot.png`
   const waitTime = 180000 // 広告の終了を待機
+
+  // ディレクトリが無ければ作成する
+  if (!fs.existsSync(dirPath)) {
+    fs.mkdirSync(dirPath);
+  }
 
   await page.goto(youtubePath);
   await page.waitForSelector(playButtonSelector);

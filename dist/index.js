@@ -23,9 +23,14 @@ const fs_1 = __importDefault(require("fs"));
     page.on('pageerror', (error) => {
         console.error('pageerror: ', error);
     });
+    const dirPath = 'public/images/';
     const playButtonSelector = 'button.ytp-large-play-button.ytp-button';
-    const screenshotPath = 'public/images/screenshot.png';
+    const screenshotPath = `${dirPath}screenshot.png`;
     const waitTime = 180000; // 広告の終了を待機
+    // ディレクトリが無ければ作成する
+    if (!fs_1.default.existsSync(dirPath)) {
+        fs_1.default.mkdirSync(dirPath);
+    }
     await page.goto(youtubePath);
     await page.waitForSelector(playButtonSelector);
     await page.click(playButtonSelector);
