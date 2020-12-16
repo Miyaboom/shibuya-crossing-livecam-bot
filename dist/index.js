@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const puppeteer_1 = __importDefault(require("puppeteer"));
 const twitter_1 = __importDefault(require("twitter"));
-const fs_1 = __importDefault(require("fs"));
+const fs_extra_1 = __importDefault(require("fs-extra"));
 (async () => {
     // 環境変数
     const chromePath = process.env.CHROME_PATH || '';
@@ -28,8 +28,8 @@ const fs_1 = __importDefault(require("fs"));
     const screenshotPath = `${dirPath}screenshot.png`;
     const waitTime = 180000; // 広告の終了を待機
     // ディレクトリが無ければ作成する
-    if (!fs_1.default.existsSync(dirPath)) {
-        fs_1.default.mkdirSync(dirPath);
+    if (!fs_extra_1.default.existsSync(dirPath)) {
+        fs_extra_1.default.mkdirsSync(dirPath);
     }
     await page.goto(youtubePath);
     await page.waitForSelector(playButtonSelector);
@@ -47,7 +47,7 @@ const fs_1 = __importDefault(require("fs"));
     // スクリーンショットをTwitterにアップロード
     const data = (() => {
         try {
-            return fs_1.default.readFileSync(screenshotPath);
+            return fs_extra_1.default.readFileSync(screenshotPath);
         }
         catch (error) {
             console.error('failed to read ', error);

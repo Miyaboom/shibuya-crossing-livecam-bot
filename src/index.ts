@@ -1,6 +1,6 @@
 import puppeteer from 'puppeteer';
 import twitter from 'twitter'
-import fs from 'fs'
+import fs from 'fs-extra'
 
 (async () => {
 
@@ -30,7 +30,7 @@ import fs from 'fs'
 
   // ディレクトリが無ければ作成する
   if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath);
+    fs.mkdirsSync(dirPath);
   }
 
   await page.goto(youtubePath);
