@@ -57,7 +57,7 @@ const fs_extra_1 = __importDefault(require("fs-extra"));
     // Twitterに投稿
     const media_ids = `${media.media_id_string}`;
     twitterClient.post('statuses/update', {
-        status: '#渋谷 #渋谷スクランブル交差点 #Shibuya #ShibuyaCrossing',
+        status: '#渋谷 #渋谷スクランブル交差点 #Shibuya https://youtu.be/lkIJYc4UH60',
         media_ids: media_ids
     }, (error, tweet, response) => {
         if (!error) {
