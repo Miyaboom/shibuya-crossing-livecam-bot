@@ -4,7 +4,7 @@ import fs from 'fs-extra'
 
 (async () => {
 
-  // 環境変数
+  // 環境変数を取得
   const chromePath = process.env.CHROME_PATH || ''
   const youtubePath = process.env.YOUTUBE_PATH || ''
   const twitterConsumerKey = process.env.TWITTER_CONSUMER_KEY || ''
@@ -12,7 +12,7 @@ import fs from 'fs-extra'
   const twitterTokenKey = process.env.TWITTER_TOKEN_KEY || ''
   const twitterTokenSecret = process.env.TWITTER_TOKEN_SECRET || ''
 
-  // Puppeteer
+  // Puppeteer初期化
   const browser = await puppeteer.launch({
     executablePath: chromePath,
     args: ['--no-sandbox', '--disable-setuid-sandbox']
@@ -26,13 +26,14 @@ import fs from 'fs-extra'
   const dirPath = 'public/images/'
   const playButtonSelector = 'button.ytp-large-play-button.ytp-button'
   const screenshotPath = `${dirPath}screenshot.png`
-  const waitTime = 180000 // 広告の終了を待機
+  const waitTime = 180000 // 広告の終了を待機する時間
 
-  // ディレクトリが無ければ作成する
+  // ディレクトリが無ければ作成
   if (!fs.existsSync(dirPath)) {
     fs.mkdirsSync(dirPath);
   }
 
+  // Youtubeの動画をキャプチャ
   await page.goto(youtubePath);
   await page.waitForSelector(playButtonSelector);
   await page.click(playButtonSelector);
@@ -40,7 +41,7 @@ import fs from 'fs-extra'
   await page.screenshot({ path: screenshotPath });
   await browser.close();
 
-  // Twitter
+  // Twitterクライアント初期化
   const twitterClient = new twitter({
     consumer_key: twitterConsumerKey,
     consumer_secret: twitterConsumerSecret,
