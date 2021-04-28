@@ -63,7 +63,7 @@ import fs from 'fs-extra'
   const media_ids = `${media.media_id_string}`
 
   twitterClient.post('statuses/update', {
-    status: '#渋谷 #渋谷スクランブル交差点 #Shibuya https://youtu.be/lkIJYc4UH60',
+    status: '【LIVE】渋谷スクランブル交差点 ライブカメラ / Shibuya Scramble Crossing Live Camera https://youtu.be/HpdO5Kq3o7Y @YouTubeより',
     media_ids: media_ids
   }, (error, tweet, response) => {
     if (!error) {

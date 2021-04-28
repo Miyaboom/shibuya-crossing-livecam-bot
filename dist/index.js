@@ -7,14 +7,14 @@ const puppeteer_1 = __importDefault(require("puppeteer"));
 const twitter_1 = __importDefault(require("twitter"));
 const fs_extra_1 = __importDefault(require("fs-extra"));
 (async () => {
-    // 環境変数
+    // 環境変数を取得
     const chromePath = process.env.CHROME_PATH || '';
     const youtubePath = process.env.YOUTUBE_PATH || '';
     const twitterConsumerKey = process.env.TWITTER_CONSUMER_KEY || '';
     const twitterConsumerSecret = process.env.TWITTER_CONSUMER_SECRET || '';
     const twitterTokenKey = process.env.TWITTER_TOKEN_KEY || '';
     const twitterTokenSecret = process.env.TWITTER_TOKEN_SECRET || '';
-    // Puppeteer
+    // Puppeteer初期化
     const browser = await puppeteer_1.default.launch({
         executablePath: chromePath,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
@@ -26,18 +26,19 @@ const fs_extra_1 = __importDefault(require("fs-extra"));
     const dirPath = 'public/images/';
     const playButtonSelector = 'button.ytp-large-play-button.ytp-button';
     const screenshotPath = `${dirPath}screenshot.png`;
-    const waitTime = 180000; // 広告の終了を待機
-    // ディレクトリが無ければ作成する
+    const waitTime = 180000; // 広告の終了を待機する時間
+    // ディレクトリが無ければ作成
     if (!fs_extra_1.default.existsSync(dirPath)) {
         fs_extra_1.default.mkdirsSync(dirPath);
     }
+    // Youtubeの動画をキャプチャ
     await page.goto(youtubePath);
     await page.waitForSelector(playButtonSelector);
     await page.click(playButtonSelector);
     await page.waitForTimeout(waitTime);
     await page.screenshot({ path: screenshotPath });
     await browser.close();
-    // Twitter
+    // Twitterクライアント初期化
     const twitterClient = new twitter_1.default({
         consumer_key: twitterConsumerKey,
         consumer_secret: twitterConsumerSecret,
@@ -57,7 +58,7 @@ const fs_extra_1 = __importDefault(require("fs-extra"));
     // Twitterに投稿
     const media_ids = `${media.media_id_string}`;
     twitterClient.post('statuses/update', {
-        status: '#渋谷 #渋谷スクランブル交差点 #Shibuya https://youtu.be/lkIJYc4UH60',
+        status: '【LIVE】渋谷スクランブル交差点 ライブカメラ / Shibuya Scramble Crossing Live Camera https://youtu.be/HpdO5Kq3o7Y @YouTubeより',
         media_ids: media_ids
     }, (error, tweet, response) => {
         if (!error) {
