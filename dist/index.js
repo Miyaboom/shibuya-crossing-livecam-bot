@@ -7,13 +7,18 @@ const puppeteer_1 = __importDefault(require("puppeteer"));
 const twitter_1 = __importDefault(require("twitter"));
 const fs_extra_1 = __importDefault(require("fs-extra"));
 (async () => {
-    // 環境変数を取得
     const chromePath = process.env.CHROME_PATH || '';
-    const youtubePath = process.env.YOUTUBE_PATH || '';
     const twitterConsumerKey = process.env.TWITTER_CONSUMER_KEY || '';
     const twitterConsumerSecret = process.env.TWITTER_CONSUMER_SECRET || '';
     const twitterTokenKey = process.env.TWITTER_TOKEN_KEY || '';
     const twitterTokenSecret = process.env.TWITTER_TOKEN_SECRET || '';
+    const youtubeVideoPath = 'https://www.youtube.com/embed/HpdO5Kq3o7Y?autoplay=1&controls=0';
+    const youtubeChatPath = 'https://www.youtube.com/live_chat?is_popout=1&v=HpdO5Kq3o7Y';
+    const userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36';
+    const dirPath = 'public/images/';
+    const playButtonSelector = 'button.ytp-large-play-button.ytp-button';
+    const screenshotVideoPath = `${dirPath}screenshotvideo.png`;
+    const screenshotChatPath = `${dirPath}screenshotchat.png`;
     // Puppeteer初期化
     const browser = await puppeteer_1.default.launch({
         executablePath: chromePath,
@@ -23,20 +28,20 @@ const fs_extra_1 = __importDefault(require("fs-extra"));
     page.on('pageerror', (error) => {
         console.error('pageerror: ', error);
     });
-    const dirPath = 'public/images/';
-    const playButtonSelector = 'button.ytp-large-play-button.ytp-button';
-    const screenshotPath = `${dirPath}screenshot.png`;
-    const waitTime = 180000; // 広告の終了を待機する時間
     // ディレクトリが無ければ作成
     if (!fs_extra_1.default.existsSync(dirPath)) {
         fs_extra_1.default.mkdirsSync(dirPath);
     }
     // Youtubeの動画をキャプチャ
-    await page.goto(youtubePath);
+    await page.goto(youtubeVideoPath);
     await page.waitForSelector(playButtonSelector);
     await page.click(playButtonSelector);
-    await page.waitForTimeout(waitTime);
-    await page.screenshot({ path: screenshotPath });
+    await page.waitForTimeout(180000);
+    await page.screenshot({ path: screenshotVideoPath });
+    await page.setUserAgent(userAgent);
+    await page.goto(youtubeChatPath);
+    await page.waitForTimeout(1000);
+    await page.screenshot({ path: screenshotChatPath });
     await browser.close();
     // Twitterクライアント初期化
     const twitterClient = new twitter_1.default({
@@ -46,17 +51,14 @@ const fs_extra_1 = __importDefault(require("fs-extra"));
         access_token_secret: twitterTokenSecret
     });
     // スクリーンショットをTwitterにアップロード
-    const data = (() => {
-        try {
-            return fs_extra_1.default.readFileSync(screenshotPath);
-        }
-        catch (error) {
-            console.error('failed to read ', error);
-        }
-    })();
-    const media = await twitterClient.post('media/upload', { media: data });
+    const upload = async (path) => {
+        const data = fs_extra_1.default.readFileSync(path);
+        return await twitterClient.post('media/upload', { media: data });
+    };
+    const screenshotVideoMedia = await upload(screenshotVideoPath);
+    const screenshotChatMedia = await upload(screenshotChatPath);
     // Twitterに投稿
-    const media_ids = `${media.media_id_string}`;
+    const media_ids = `${screenshotVideoMedia.media_id_string},${screenshotChatMedia.media_id_string}`;
     twitterClient.post('statuses/update', {
         status: '【LIVE】渋谷スクランブル交差点 ライブカメラ / Shibuya Scramble Crossing Live Camera https://youtu.be/HpdO5Kq3o7Y @YouTubeより',
         media_ids: media_ids
