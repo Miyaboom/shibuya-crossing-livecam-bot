@@ -10,7 +10,7 @@ import fs from 'fs-extra'
   const twitterTokenKey = process.env.TWITTER_TOKEN_KEY || ''
   const twitterTokenSecret = process.env.TWITTER_TOKEN_SECRET || ''
 
-  const youtubeVideoPath = 'https://www.youtube.com/embed/HpdO5Kq3o7Y?autoplay=1&controls=0'
+  const youtubeVideoPath = 'https://www.youtube.com/embed/HpdO5Kq3o7Y'
   const youtubeChatPath = 'https://www.youtube.com/live_chat?is_popout=1&v=HpdO5Kq3o7Y'
   const userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.85 Safari/537.36'
   const dirPath = 'public/images/'
@@ -35,13 +35,13 @@ import fs from 'fs-extra'
   }
 
   // Youtubeの動画をキャプチャ
+  await page.setUserAgent(userAgent)
   await page.goto(youtubeVideoPath);
   await page.waitForSelector(playButtonSelector);
   await page.click(playButtonSelector);
   await page.waitForTimeout(180000);
   await page.screenshot({ path: screenshotVideoPath });
 
-  await page.setUserAgent(userAgent)
   await page.goto(youtubeChatPath);
   await page.waitForTimeout(1000);
   await page.screenshot({ path: screenshotChatPath });
@@ -68,7 +68,7 @@ import fs from 'fs-extra'
   const media_ids = `${screenshotVideoMedia.media_id_string},${screenshotChatMedia.media_id_string}`
 
   twitterClient.post('statuses/update', {
-    status: '【LIVE】渋谷スクランブル交差点 ライブカメラ / Shibuya Scramble Crossing Live Camera https://youtu.be/HpdO5Kq3o7Y @YouTubeより',
+    status: '【LIVE】渋谷スクランブル交差点 ライブカメラ / Shibuya Scramble Crossing Live Camera https://youtu.be/HpdO5Kq3o7Y @YouTubeより #渋谷 #shibuya',
     media_ids: media_ids
   }, (error, tweet, response) => {
     if (!error) {
