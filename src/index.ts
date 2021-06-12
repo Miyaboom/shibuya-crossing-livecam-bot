@@ -34,7 +34,7 @@ import fs from 'fs-extra'
     fs.mkdirsSync(dirPath);
   }
 
-  // Youtubeの動画をキャプチャ
+  // Youtubeをキャプチャ
   await page.setUserAgent(userAgent)
   await page.goto(youtubeVideoPath);
   await page.waitForSelector(playButtonSelector);
@@ -68,7 +68,7 @@ import fs from 'fs-extra'
   const media_ids = `${screenshotVideoMedia.media_id_string},${screenshotChatMedia.media_id_string}`
 
   twitterClient.post('statuses/update', {
-    status: '【LIVE】渋谷スクランブル交差点 ライブカメラ / Shibuya Scramble Crossing Live Camera https://youtu.be/HpdO5Kq3o7Y @YouTubeより #渋谷 #shibuya',
+    status: '【LIVE】渋谷スクランブル交差点 ライブカメラ / Shibuya Scramble Crossing Live Camera https://youtu.be/HpdO5Kq3o7Y @YouTubeより #渋谷 #shibuya #渋谷スクランブル交差点',
     media_ids: media_ids
   }, (error, tweet, response) => {
     if (!error) {

@@ -1,6 +1,5 @@
 # shibuya-crossing-livecam-bot
 
 ## 概要
-[渋谷スクランブル交差点ライブカメラ](https://www.youtube.com/watch?v=lkIJYc4UH60)の映像をキャプチャしてTwitterに投稿するbot
-
-[Twitter](https://twitter.com/sh_crossing)
+渋谷スクランブル交差点ライブカメラの映像をキャプチャしてTwitterに投稿するbot
+[アカウント](https://twitter.com/sh_crossing)
